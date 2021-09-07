@@ -1,3 +1,3 @@
-module example
+module go-example
 
 go 1.16
