@@ -37,13 +37,12 @@ func parsePattern(pattern string) []string {
 }
 
 func (r *router) addRoute(method string, pattern string, handler http.HandlerFunc) {
-
 	if _, ok := r.roots[method]; !ok {
 		r.roots[method] = &node{}
 	}
 
 	key := method + "_" + pattern
-	r.roots[key].insert(pattern, parsePattern(pattern), 0)
+	r.roots[method].insert(pattern, parsePattern(pattern), 0)
 	r.handlers[key] = handler
 }
 
