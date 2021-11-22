@@ -22,7 +22,7 @@ func (n *node) insert(pattern string, parts []string, depth int) {
 		n.children = append(n.children, child)
 	}
 
-	n.insert(pattern, parts, depth+1)
+	child.insert(pattern, parts, depth+1)
 }
 
 func (n *node) find(parts []string, depth int) (string, error) {
@@ -32,7 +32,6 @@ func (n *node) find(parts []string, depth int) (string, error) {
 
 	part := parts[depth]
 	child := n.matchChild(part)
-
 	if child == nil {
 		return "", errors.New("not found")
 	}

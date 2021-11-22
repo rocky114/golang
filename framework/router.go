@@ -63,6 +63,7 @@ func (r *router) handle(w http.ResponseWriter, req *http.Request) {
 	pattern, err := r.getRoute(req.Method, req.URL.Path)
 	if err != nil {
 		_, _ = w.Write([]byte("not found"))
+		return
 	}
 
 	key := req.Method + "_" + pattern
