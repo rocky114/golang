@@ -8,16 +8,16 @@ import (
 
 func main() {
 	engine := framework.New()
-	engine.GET("/", func(writer http.ResponseWriter, request *http.Request) {
-		_, _ = writer.Write([]byte("hello world"))
+	engine.GET("/", func(ctx *framework.Context) {
+		ctx.String(http.StatusOK, "hello world")
 	})
 
-	engine.GET("/hello", func(writer http.ResponseWriter, request *http.Request) {
-		_, _ = writer.Write([]byte("hello !!!"))
+	engine.GET("/hello", func(ctx *framework.Context) {
+		ctx.String(http.StatusOK, "hello !!!")
 	})
 
-	engine.GET("/hello/:name", func(writer http.ResponseWriter, request *http.Request) {
-		_, _ = writer.Write([]byte("hello :name !!!"))
+	engine.GET("/hello/:name", func(ctx *framework.Context) {
+		ctx.String(http.StatusOK, "hello :name")
 	})
 
 	err := engine.Run(":9999")

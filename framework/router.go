@@ -2,19 +2,18 @@ package framework
 
 import (
 	"errors"
-	"net/http"
 	"strings"
 )
 
 type router struct {
 	roots    map[string]*node
-	handlers map[string]http.HandlerFunc
+	handlers map[string]handlerFunc
 }
 
 func newRouter() *router {
 	return &router{
 		roots:    make(map[string]*node),
-		handlers: make(map[string]http.HandlerFunc),
+		handlers: make(map[string]handlerFunc),
 	}
 }
 
@@ -36,7 +35,7 @@ func parsePattern(pattern string) []string {
 	return parts
 }
 
-func (r *router) addRoute(method string, pattern string, handler http.HandlerFunc) {
+func (r *router) addRoute(method string, pattern string, handler handlerFunc) {
 	if _, ok := r.roots[method]; !ok {
 		r.roots[method] = &node{}
 	}
@@ -59,13 +58,13 @@ func (r *router) getRoute(method, path string) (string, error) {
 	return pattern, nil
 }
 
-func (r *router) handle(w http.ResponseWriter, req *http.Request) {
-	pattern, err := r.getRoute(req.Method, req.URL.Path)
+func (r *router) handle(c *Context) {
+	pattern, err := r.getRoute(c.Method, c.Path)
 	if err != nil {
-		_, _ = w.Write([]byte("not found"))
+		_, _ = c.Writer.Write([]byte("not found"))
 		return
 	}
 
-	key := req.Method + "_" + pattern
-	r.handlers[key](w, req)
+	key := c.Method + "_" + pattern
+	r.handlers[key](c)
 }

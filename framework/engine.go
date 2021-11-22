@@ -4,6 +4,8 @@ import (
 	"net/http"
 )
 
+type handlerFunc func(ctx *Context)
+
 type engine struct {
 	router *router
 }
@@ -14,20 +16,20 @@ func New() *engine {
 	}
 }
 
-func (engine *engine) addRoute(method string, pattern string, handler http.HandlerFunc) {
+func (engine *engine) addRoute(method string, pattern string, handler handlerFunc) {
 	engine.router.addRoute(method, pattern, handler)
 }
 
-func (engine *engine) GET(pattern string, handler http.HandlerFunc) {
+func (engine *engine) GET(pattern string, handler handlerFunc) {
 	engine.addRoute("GET", pattern, handler)
 }
 
-func (engine *engine) POST(pattern string, handler http.HandlerFunc) {
+func (engine *engine) POST(pattern string, handler handlerFunc) {
 	engine.addRoute("POST", pattern, handler)
 }
 
 func (engine *engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	engine.router.handle(w, req)
+	engine.router.handle(newContext(w, req))
 }
 
 func (engine *engine) Run(addr string) error {
