@@ -1,7 +1,5 @@
 package framework
 
-import "errors"
-
 type node struct {
 	pattern    string
 	part       string
@@ -25,15 +23,15 @@ func (n *node) insert(pattern string, parts []string, depth int) {
 	child.insert(pattern, parts, depth+1)
 }
 
-func (n *node) find(parts []string, depth int) (string, error) {
+func (n *node) find(parts []string, depth int) string {
 	if len(parts) == depth {
-		return n.pattern, nil
+		return n.pattern
 	}
 
 	part := parts[depth]
 	child := n.matchChild(part)
 	if child == nil {
-		return "", errors.New("not found")
+		return ""
 	}
 
 	return child.find(parts, depth+1)

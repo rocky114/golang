@@ -1,7 +1,7 @@
 package framework
 
 import (
-	"errors"
+	"net/http"
 	"strings"
 )
 
@@ -45,23 +45,18 @@ func (r *router) addRoute(method string, pattern string, handler handlerFunc) {
 	r.handlers[key] = handler
 }
 
-func (r *router) getRoute(method, path string) (string, error) {
+func (r *router) getRoute(method, path string) string {
 	if _, ok := r.roots[method]; !ok {
-		return "", errors.New("route not found")
+		return ""
 	}
 
-	pattern, err := r.roots[method].find(parsePattern(path), 0)
-	if err != nil {
-		return "", err
-	}
-
-	return pattern, nil
+	return r.roots[method].find(parsePattern(path), 0)
 }
 
 func (r *router) handle(c *Context) {
-	pattern, err := r.getRoute(c.Method, c.Path)
-	if err != nil {
-		_, _ = c.Writer.Write([]byte("not found"))
+	pattern := r.getRoute(c.Method, c.Path)
+	if len(pattern) == 0 {
+		c.String(http.StatusNotFound, "404 NOT FOUND: "+c.Path)
 		return
 	}
 
