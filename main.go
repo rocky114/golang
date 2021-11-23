@@ -3,11 +3,21 @@ package main
 import (
 	"fmt"
 	"go-example/framework"
+	"log"
 	"net/http"
+	"time"
 )
 
 func main() {
 	engine := framework.New()
+	engine.Use(func(ctx *framework.Context) {
+		t := time.Now()
+
+		ctx.Next()
+
+		log.Printf("%s in %v", ctx.Req.RequestURI, time.Since(t))
+	})
+
 	engine.GET("/", func(ctx *framework.Context) {
 		ctx.String(http.StatusOK, "hello world")
 	})

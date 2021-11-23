@@ -2,6 +2,7 @@ package framework
 
 import (
 	"net/http"
+	"strings"
 )
 
 type handlerFunc func(ctx *Context)
@@ -12,8 +13,9 @@ type engine struct {
 }
 
 type routerGroup struct {
-	prefix string
-	engine *engine
+	prefix      string
+	engine      *engine
+	middlewares []map[string]handlerFunc
 }
 
 func New() *engine {
@@ -23,11 +25,20 @@ func New() *engine {
 	return e
 }
 
+func (group *routerGroup) Use(middlewares ...handlerFunc) *routerGroup {
+	for _, middleware := range middlewares {
+		group.middlewares = append(group.middlewares, map[string]handlerFunc{group.prefix: middleware})
+	}
+
+	return group
+}
+
 func (group *routerGroup) Group(prefix string) *routerGroup {
 	engine := group.engine
 	newGroup := &routerGroup{
-		prefix: group.prefix + prefix,
-		engine: engine,
+		prefix:      group.prefix + prefix,
+		middlewares: group.middlewares,
+		engine:      engine,
 	}
 
 	return newGroup
@@ -46,7 +57,20 @@ func (group *routerGroup) POST(pattern string, handler handlerFunc) {
 }
 
 func (engine *engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	engine.router.handle(newContext(w, req))
+	middlewares := make([]handlerFunc, 0)
+	for _, item := range engine.routerGroup.middlewares {
+		for prefix, middleware := range item {
+			if strings.HasPrefix(req.URL.Path, prefix) {
+				middlewares = append(middlewares, middleware)
+			}
+		}
+	}
+
+	middlewares = append(middlewares, func(ctx *Context) {
+		engine.router.handle(ctx)
+	})
+
+	newContext(w, req, middlewares).Next()
 }
 
 func (engine *engine) Run(addr string) error {

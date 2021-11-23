@@ -10,15 +10,25 @@ type Context struct {
 	Req    *http.Request
 	Path   string
 	Method string
+
+	index       int
+	middlewares []handlerFunc
 }
 
-func newContext(w http.ResponseWriter, req *http.Request) *Context {
+func newContext(w http.ResponseWriter, req *http.Request, middlewares []handlerFunc) *Context {
 	return &Context{
-		Writer: w,
-		Req:    req,
-		Path:   req.URL.Path,
-		Method: req.Method,
+		Writer:      w,
+		Req:         req,
+		Path:        req.URL.Path,
+		Method:      req.Method,
+		middlewares: middlewares,
+		index:       -1,
 	}
+}
+
+func (c *Context) Next() {
+	c.index++
+	c.middlewares[c.index](c)
 }
 
 func (c *Context) Query(key string) string {
