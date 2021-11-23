@@ -46,7 +46,3 @@ func (n *node) matchChild(part string) *node {
 
 	return nil
 }
-
-func (n *node) matchChildren(part string) []*node {
-	return nil
-}
