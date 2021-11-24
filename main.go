@@ -3,19 +3,14 @@ package main
 import (
 	"fmt"
 	"go-example/framework"
-	"log"
 	"net/http"
-	"time"
 )
 
 func main() {
 	engine := framework.New()
 	engine.Use(func(ctx *framework.Context) {
-		t := time.Now()
-
+		fmt.Println("global middleware")
 		ctx.Next()
-
-		log.Printf("%s in %v", ctx.Req.RequestURI, time.Since(t))
 	})
 
 	engine.GET("/", func(ctx *framework.Context) {
@@ -31,6 +26,10 @@ func main() {
 	})
 
 	v1 := engine.Group("/api")
+	v1.Use(func(ctx *framework.Context) {
+		fmt.Println("v1 middleware")
+		ctx.Next()
+	})
 	v1.GET("/version", func(ctx *framework.Context) {
 		ctx.String(http.StatusOK, "v1")
 	})

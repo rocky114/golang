@@ -27,7 +27,7 @@ func New() *engine {
 
 func (group *routerGroup) Use(middlewares ...handlerFunc) *routerGroup {
 	for _, middleware := range middlewares {
-		group.middlewares = append(group.middlewares, map[string]handlerFunc{group.prefix: middleware})
+		group.engine.routerGroup.middlewares = append(group.middlewares, map[string]handlerFunc{group.prefix: middleware})
 	}
 
 	return group
