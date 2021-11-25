@@ -2,43 +2,38 @@ package framework
 
 import (
 	"net/http"
-	"strings"
 )
 
 type handlerFunc func(ctx *Context)
 
 type engine struct {
-	router *router
+	router     *router
+	middleware *middleware
 	*routerGroup
 }
 
 type routerGroup struct {
-	prefix      string
-	engine      *engine
-	middlewares []map[string]handlerFunc
+	prefix string
+	engine *engine
 }
 
 func New() *engine {
 	e := &engine{router: newRouter()}
 	e.routerGroup = &routerGroup{engine: e}
+	e.middleware = &middleware{}
 
 	return e
 }
 
-func (group *routerGroup) Use(middlewares ...handlerFunc) *routerGroup {
-	for _, middleware := range middlewares {
-		group.engine.routerGroup.middlewares = append(group.middlewares, map[string]handlerFunc{group.prefix: middleware})
-	}
-
-	return group
+func (group *routerGroup) Use(middlewares ...handlerFunc) {
+	group.engine.middleware.insert(parsePattern(group.prefix), 0, middlewares)
 }
 
 func (group *routerGroup) Group(prefix string) *routerGroup {
-	engine := group.engine
+	e := group.engine
 	newGroup := &routerGroup{
-		prefix:      group.prefix + prefix,
-		middlewares: group.middlewares,
-		engine:      engine,
+		prefix: group.prefix + prefix,
+		engine: e,
 	}
 
 	return newGroup
@@ -57,14 +52,7 @@ func (group *routerGroup) POST(pattern string, handler handlerFunc) {
 }
 
 func (engine *engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	middlewares := make([]handlerFunc, 0)
-	for _, item := range engine.routerGroup.middlewares {
-		for prefix, middleware := range item {
-			if strings.HasPrefix(req.URL.Path, prefix) {
-				middlewares = append(middlewares, middleware)
-			}
-		}
-	}
+	middlewares := engine.middleware.find(parsePattern(req.URL.Path), 0)
 
 	middlewares = append(middlewares, func(ctx *Context) {
 		engine.router.handle(ctx)
