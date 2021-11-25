@@ -6,6 +6,10 @@ type middleware struct {
 	handlers []handlerFunc
 }
 
+func newMiddleware() *middleware {
+	return &middleware{}
+}
+
 func (m *middleware) insert(parts []string, depth int, middlewares []handlerFunc) {
 	if len(parts) == depth {
 		m.handlers = append(m.handlers, middlewares...)

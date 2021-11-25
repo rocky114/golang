@@ -13,7 +13,7 @@ type routerGroup struct {
 }
 
 func New() *routerGroup {
-	return &routerGroup{router: newRouter(), middleware: &middleware{}}
+	return &routerGroup{router: newRouter(), middleware: newMiddleware()}
 }
 
 func (group *routerGroup) Use(middlewares ...handlerFunc) {
