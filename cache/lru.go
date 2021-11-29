@@ -8,7 +8,7 @@ type Cache struct {
 	entry    map[string]*list.Element
 }
 
-func New(size int) *Cache {
+func NewCache(size int) *Cache {
 	return &Cache{
 		maxBytes: size,
 		list:     list.New(),
@@ -25,10 +25,15 @@ func (c *Cache) Get(key string) interface{} {
 }
 
 func (c *Cache) Set(key string, val interface{}) bool {
-	c.evict()
+	if element, ok := c.entry[key]; ok {
+		element.Value = val
+		c.list.MoveToFront(element)
+		c.entry[key] = element
+	} else {
+		c.entry[key] = c.list.PushFront(val)
+	}
 
-	element := c.list.PushFront(val)
-	c.entry[key] = element
+	c.evict()
 
 	return true
 }
