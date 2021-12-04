@@ -2,31 +2,28 @@ package cache
 
 import (
 	"container/list"
-	"reflect"
 	"sync"
-	"unsafe"
 )
 
 type Cache struct {
-	total uint
-	used  uint
-	list  *list.List
-	entry map[string]*list.Element
-	mu    *sync.Mutex
+	list       *list.List
+	entry      map[string]*list.Element
+	mu         *sync.RWMutex
+	maxEntries uint
 }
 
-func NewCache(total uint) *Cache {
+func NewCache(maxEntries uint) *Cache {
 	return &Cache{
-		total: total,
-		list:  list.New(),
-		entry: make(map[string]*list.Element),
-		mu:    &sync.Mutex{},
+		maxEntries: maxEntries,
+		list:       list.New(),
+		entry:      make(map[string]*list.Element),
+		mu:         &sync.RWMutex{},
 	}
 }
 
 func (c *Cache) Get(key string) interface{} {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 
 	if element, ok := c.entry[key]; ok {
 		return element.Value
@@ -39,8 +36,6 @@ func (c *Cache) Set(key string, val interface{}) bool {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	c.free(key)
-
 	if element, ok := c.entry[key]; ok {
 		element.Value = val
 		c.list.MoveToFront(element)
@@ -49,37 +44,14 @@ func (c *Cache) Set(key string, val interface{}) bool {
 		c.entry[key] = c.list.PushFront(val)
 	}
 
-	c.used += uint(len(key)) + length(val)
-
 	c.evict()
 
 	return true
 }
 
-func length(val interface{}) uint {
-	kind := reflect.TypeOf(val).Kind()
-	if kind == reflect.Array || kind == reflect.String || kind == reflect.Chan || kind == reflect.Map || kind == reflect.Slice {
-		return uint(reflect.ValueOf(val).Len())
-	}
-
-	return uint(unsafe.Sizeof(val))
-}
-
-func (c *Cache) free(key string) {
-	if _, ok := c.entry[key]; !ok {
-		return
-	}
-
-	c.used -= length(key)
-
-	c.used -= length(c.entry[key].Value)
-}
-
 func (c *Cache) Delete(key string) bool {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-
-	c.free(key)
 
 	if _, ok := c.entry[key]; !ok {
 		return false
@@ -91,12 +63,18 @@ func (c *Cache) Delete(key string) bool {
 	return true
 }
 
+func (c *Cache) Clear() {
+	c.list.Init()
+	c.entry = make(map[string]*list.Element)
+	c.maxEntries = 0
+}
+
 func (c *Cache) Len() int {
 	return c.list.Len()
 }
 
 func (c *Cache) isFull() bool {
-	if c.used >= c.total {
+	if c.maxEntries >= uint(c.Len()) {
 		return true
 	}
 
@@ -114,6 +92,8 @@ func (c *Cache) evict() bool {
 			delete(c.entry, key)
 		}
 	}
+
+	c.maxEntries -= 1
 
 	return true
 }

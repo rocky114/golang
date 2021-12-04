@@ -5,7 +5,7 @@ import (
 )
 
 func TestGet(t *testing.T) {
-	cache := NewCache(200)
+	cache := NewCache(20)
 	cache.Set("name", "rocky")
 	cache.Set("age", 1)
 
