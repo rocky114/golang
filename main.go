@@ -13,7 +13,18 @@ func main() {
 		ctx.Next()
 	})
 
+	engine.Use(func(ctx *framework.Context) {
+		defer func() {
+			if err := recover(); err != nil {
+				ctx.String(http.StatusInternalServerError, fmt.Sprintf("internal server error: %s", err))
+			}
+		}()
+
+		ctx.Next()
+	})
+
 	engine.GET("/", func(ctx *framework.Context) {
+		panic("this is test")
 		ctx.String(http.StatusOK, "hello world")
 	})
 
