@@ -24,8 +24,11 @@ func main() {
 	})
 
 	engine.GET("/", func(ctx *framework.Context) {
-		panic("this is test")
 		ctx.String(http.StatusOK, "hello world")
+	})
+
+	engine.GET("/panic", func(ctx *framework.Context) {
+		panic("server panic")
 	})
 
 	engine.GET("/hello", func(ctx *framework.Context) {

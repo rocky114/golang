@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package student;
+option go_package = "api/student";
+
+import "google/api/annotations.proto";
+
+message StringMessage {
+   string value = 1;
+}
+
+service StudentManager {
+   rpc Echo(StringMessage) returns (StringMessage) {
+   option (google.api.http) = {
+         post: "/v1/example/echo"
+         body: "*"
+       };
+   }
+}
