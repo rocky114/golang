@@ -1,4 +1,4 @@
-package framework
+package web
 
 type middleware struct {
 	part     string

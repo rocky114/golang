@@ -1,4 +1,4 @@
-package framework
+package web
 
 import (
 	"encoding/json"

@@ -1,4 +1,4 @@
-package framework
+package web
 
 type node struct {
 	pattern    string
