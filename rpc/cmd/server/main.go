@@ -1,35 +1,41 @@
 package main
 
 import (
-	"context"
+	"fmt"
 	"gitlab.sz.sensetime.com/kubersolver/api/student"
+	"gitlab.sz.sensetime.com/kubersolver/internal/service"
 	"google.golang.org/grpc"
 	"log"
 	"net"
+	"sync"
 )
 
-type studentManager struct {
-	student.UnimplementedStudentManagerServer
-}
-
 func main() {
-	listen, err := net.Listen("tcp", ":5001")
-	if err != nil {
-		log.Fatalln("init listen fail: ", err.Error())
+	var wg sync.WaitGroup
+	for _, addr := range []string{":5001", ":5002"} {
+		wg.Add(1)
+
+		go func(addr string) {
+			defer func() {
+				wg.Done()
+			}()
+
+			listen, err := net.Listen("tcp", addr)
+			if err != nil {
+				log.Fatalln("init listen fail: ", err.Error())
+			}
+
+			server := grpc.NewServer()
+			student.RegisterStudentManagerServer(server, &service.StudentManager{Addr: addr})
+
+			err = server.Serve(listen)
+			if err != nil {
+				log.Fatalln("failed to serve:", err.Error())
+			}
+		}(addr)
 	}
 
-	server := grpc.NewServer()
-	student.RegisterStudentManagerServer(server, &studentManager{})
+	fmt.Println("start serve successfully")
 
-	log.Println("gRPC server start...")
-	err = server.Serve(listen)
-	if err != nil {
-		log.Fatalln("failed to serve:", err.Error())
-	}
-}
-
-func (std *studentManager) Echo(ctx context.Context, req *student.StringMessage) (*student.StringMessage, error) {
-	return &student.StringMessage{
-		Value: req.GetValue(),
-	}, nil
+	wg.Wait()
 }
