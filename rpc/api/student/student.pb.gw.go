@@ -130,7 +130,7 @@ func RegisterStudentManagerHandler(ctx context.Context, mux *runtime.ServeMux, c
 
 // RegisterStudentManagerHandlerClient registers the http handlers for service StudentManager
 // to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "StudentManagerClient".
-// Note: the gRPC web executes interceptors within the gRPC handler. If the passed in "StudentManagerClient"
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "StudentManagerClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
 // "StudentManagerClient" to call the correct interceptors.
 func RegisterStudentManagerHandlerClient(ctx context.Context, mux *runtime.ServeMux, client StudentManagerClient) error {
