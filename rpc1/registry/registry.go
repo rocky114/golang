@@ -67,9 +67,9 @@ func (r *Registry) aliveServers() []string {
 func (r *Registry) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	switch req.Method {
 	case "GET":
-		w.Header().Set("X-Rpc-Server", strings.Join(r.aliveServers(), ","))
+		w.Header().Set("X-Rpc-Servers", strings.Join(r.aliveServers(), ","))
 	case "POST":
-		addr := req.Header.Get("x-Rpc-Server")
+		addr := req.Header.Get("X-Rpc-Server")
 		if addr == "" {
 			w.WriteHeader(http.StatusInternalServerError)
 			return

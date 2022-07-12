@@ -221,7 +221,7 @@ func (server *Server) Register(rcvr interface{}) error {
 func Register(rcvr interface{}) error { return DefaultServer.Register(rcvr) }
 
 const (
-	connnected       = "200 Connected to RPC"
+	connected        = "200 Connected to RPC"
 	defaultRPCPath   = "/_rpc_"
 	defaultDebugPath = "/debug/rpc"
 )
@@ -239,7 +239,7 @@ func (server *Server) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		log.Println("rpc hijacking ", req.RemoteAddr, ": ", err.Error())
 		return
 	}
-	_, _ = io.WriteString(conn, "HTTP/1.0 "+connnected+"\n\n")
+	_, _ = io.WriteString(conn, "HTTP/1.0 "+connected+"\n\n")
 	server.ServeConn(conn)
 }
 

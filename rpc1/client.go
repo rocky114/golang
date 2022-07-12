@@ -48,7 +48,6 @@ var ErrShutdown = errors.New("connection is shutdown")
 
 func (client *Client) Close() error {
 	client.mu.Lock()
-
 	defer client.mu.Unlock()
 
 	if client.closing {
@@ -175,7 +174,7 @@ func (client *Client) Go(serviceMethod string, args, reply interface{}, done cha
 }
 
 func (client *Client) Call(ctx context.Context, serviceMethod string, args, reply interface{}) error {
-	call := <-client.Go(serviceMethod, args, reply, make(chan *Call, 1)).Done
+	call := client.Go(serviceMethod, args, reply, make(chan *Call, 1))
 
 	select {
 	case <-ctx.Done():

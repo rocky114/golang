@@ -47,7 +47,7 @@ func (xc *XClient) dial(rpcAddr string) (*rpc1.Client, error) {
 
 	if client == nil {
 		var err error
-		client, err = XDial(rpcAddr, xc.opt)
+		client, err = rpc1.XDial(rpcAddr, xc.opt)
 		if err != nil {
 			return nil, err
 		}
@@ -106,10 +106,10 @@ func (xc *XClient) Broadcast(ctx context.Context, serviceMethod string, args, re
 				reflect.ValueOf(reply).Elem().Set(reflect.ValueOf(cloneReply).Elem())
 				replyDone = true
 			}
+			mu.Unlock()
 		}(rpcAddr)
 	}
 
 	wg.Wait()
-
 	return e
 }
